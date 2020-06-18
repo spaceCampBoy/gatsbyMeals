@@ -6,6 +6,19 @@ import Estimation from "../components/estimationResult"
 import { trackPromise } from "react-promise-tracker"
 import LoadingIndicator from "../components/loader"
 import { Map, TileLayer, Marker, Popup} from "react-leaflet"
+import L from 'leaflet'
+import { useStaticQuery, graphql } from "gatsby"
+const imageIconPath = `https://cdn0.iconfinder.com/data/icons/small-n-flat/24/678111-map-marker-512.png`
+export const pointerIcon = new L.Icon({
+  iconUrl: imageIconPath,
+  iconRetinaUrl: imageIconPath,
+  iconAnchor: [15, 40],
+  popupAnchor: [10, -44],
+  iconSize: [30, 45],
+  shadowSize: [68, 95],
+  shadowAnchor: [20, 92],
+})
+
 export default class IndexPage extends React.Component {
   state = {
     bedrooms: "",
@@ -191,6 +204,7 @@ export default class IndexPage extends React.Component {
 
   render() {
     const markerPosition = [this.state.marker.lat, this.state.marker.lng]
+    
     return (
         
       <Layout>
@@ -215,7 +229,8 @@ export default class IndexPage extends React.Component {
                     draggable={this.state.draggable}
                     onDragend={this.updatePosition}
                     position={markerPosition}
-                    ref={this.refmarker}>
+                    ref={this.refmarker}
+                    icon={pointerIcon}>
                   </Marker>
                   <TileLayer
                     attribution='&amp;copy <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
