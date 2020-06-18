@@ -13,7 +13,7 @@ const Listing = ({ data }) => {
       <ul className="list-group list-group-flush">
         <li className="list-group-item">Bedrooms: {data.bedrooms}</li>
         <li className="list-group-item">Bathrooms: {data.bathrooms}</li>
-        <li className="list-group-item">Size: {data.squareFootage} ft&sup2</li>
+        <li className="list-group-item">Size: {data.squareFootage} ft<sup>2</sup></li>
         <li className="list-group-item">
           Distance: {data.distance.toFixed(2)}
         </li>

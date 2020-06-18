@@ -10,6 +10,7 @@ const LoadingIndicator = prop => {
        <div
       style={{
         position: "fixed", top: "50%", left: "45%",
+        'z-index': 5,
         justifyContent: "center",
         alignItems: "center"
       }}
