@@ -1,8 +1,6 @@
 import React from "react"
-import { Link } from "gatsby"
 import Select from "react-select"
 import Layout from "../components/layout"
-import Image from "../components/image"
 import SEO from "../components/seo"
 import Estimation from "../components/estimationResult"
 import { trackPromise } from "react-promise-tracker";
