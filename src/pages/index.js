@@ -14,7 +14,7 @@ export const pointerIcon = new L.Icon({
   iconRetinaUrl: imageIconPath,
   iconAnchor: [15, 40],
   popupAnchor: [10, -44],
-  iconSize: [30, 45],
+  iconSize: [35, 45],
   shadowSize: [68, 95],
   shadowAnchor: [20, 92],
 })
