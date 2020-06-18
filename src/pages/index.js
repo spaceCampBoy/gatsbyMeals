@@ -89,9 +89,9 @@ export default class IndexPage extends React.Component {
         if(response.data)
         {
           if(typeof response.data == "string" &&
-             response.data.include('Error'))
+             response.data.includes('Error'))
              {
-              alert(`An Error Occured. Could be that you didn't provide any search parameters! `)
+              alert(`An Error Occured. Could be that you didn't provide any search parameters, or we couldn't find your address`)
              }
              else
              {

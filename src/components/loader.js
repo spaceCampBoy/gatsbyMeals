@@ -9,8 +9,8 @@ const LoadingIndicator = prop => {
        promiseInProgress && 
        <div
       style={{
-        position: "fixed", top: "50%", left: "45%",
-        'z-index': 5,
+        position: "fixed", top: "50%", left: "48%",
+        'zIndex': 5,
         justifyContent: "center",
         alignItems: "center"
       }}
