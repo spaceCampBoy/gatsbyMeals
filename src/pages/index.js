@@ -79,8 +79,6 @@ export default class IndexPage extends React.Component {
   }
 
   callEstimationAPI() {
-    console.log(this.state);
-    
     let options = {
       bedrooms: this.state.bedrooms,
       bathrooms: this.state.bathrooms,
