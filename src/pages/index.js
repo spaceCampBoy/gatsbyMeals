@@ -175,9 +175,10 @@ export default class IndexPage extends React.Component {
       </Marker>
     ) : null
     return (
-        <LoadingIndicator>
+        
       <Layout>
         <SEO title="Home" />
+        <LoadingIndicator>
         <div className="container mb-5">
           <h3 className="display-6 text-center">
             Get your rent estimation today!
@@ -333,9 +334,10 @@ export default class IndexPage extends React.Component {
             </div>
           </div>
         </div>
+        </LoadingIndicator>
         <hr></hr>
         <div id="estimation">{this.estimationResult()}</div>
-      </Layout></LoadingIndicator>
+      </Layout>
     )
   }
 }
