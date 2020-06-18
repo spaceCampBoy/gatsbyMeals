@@ -5,7 +5,7 @@ import SEO from "../components/seo"
 import Estimation from "../components/estimationResult"
 import { trackPromise } from "react-promise-tracker"
 import LoadingIndicator from "../components/loader"
-import { Map, TileLayer, Marker, Popup } from "react-leaflet"
+import { Map, TileLayer, Marker, Popup} from "react-leaflet"
 export default class IndexPage extends React.Component {
   state = {
     bedrooms: "",
@@ -21,6 +21,11 @@ export default class IndexPage extends React.Component {
       lat: 38.530,
       lng: -96.826,
     },
+    marker: {
+      lat: 51.505,
+      lng: -0.09,
+    },
+    draggable: true,
   }
 
   getPropertyTypeOptions = () => [
@@ -150,6 +155,7 @@ export default class IndexPage extends React.Component {
 
   handleMapClick = e => {
     this.setState({
+      marker: {lat:e.latlng.lat, lng: e.latlng.lng},
       latitude: e.latlng.lat,
       longitude: e.latlng.lng,
       address: ''
@@ -161,6 +167,21 @@ export default class IndexPage extends React.Component {
     }
   }
 
+  refmarker = createRef()
+
+  toggleDraggable = () => {
+    this.setState({ draggable: !this.state.draggable })
+  }
+
+  updatePosition = () => {
+    const marker = this.refmarker.current
+    if (marker != null) {
+      this.setState({
+        marker: marker.leafletElement.getLatLng(),
+      })
+    }
+  }
+
   handleLocationFound = e => {
     this.setState({
       hasLocation: true,
@@ -169,11 +190,7 @@ export default class IndexPage extends React.Component {
   }
 
   render() {
-    const marker = this.state.hasLocation ? (
-      <Marker position={this.state.latlng}>
-        <Popup>You are here</Popup>
-      </Marker>
-    ) : null
+    const markerPosition = [this.state.marker.lat, this.state.marker.lng]
     return (
         
       <Layout>
@@ -191,15 +208,19 @@ export default class IndexPage extends React.Component {
                   id="mapid"
                   length={4}
                   onClick={this.handleMapClick}
-                  onLocationfound={this.handleLocationFound}
                   ref={this.mapRef}
                   zoom={4}
                 >
+                  <Marker
+                    draggable={this.state.draggable}
+                    onDragend={this.updatePosition}
+                    position={markerPosition}
+                    ref={this.refmarker}>
+                  </Marker>
                   <TileLayer
                     attribution='&amp;copy <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   />
-                  {marker}
                 </Map>
               </div>
             </div>
