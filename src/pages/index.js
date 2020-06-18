@@ -37,7 +37,6 @@ export default class IndexPage extends React.Component {
 
   estimateRent = () => {
     this.callEstimationAPI()
-    console.log(this.state)
   }
 
   testParam1 = () => {
@@ -104,8 +103,6 @@ export default class IndexPage extends React.Component {
               }, 800)
              }
         }
-        console.log(response.data)
-        console.log(response)
       })
       .catch(error => {
         console.log(error)
