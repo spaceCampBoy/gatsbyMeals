@@ -9,9 +9,11 @@ html {
 }
 
 .card{
-  /* display: block;
-  max-width: 400px;
-  width: auto;
-  height: auto; */
   margin: 10px;
+}
+
+
+#mapid {
+  height: 500px;
+  width: 500px;
 }

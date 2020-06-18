@@ -1,11 +1,11 @@
-import React from "react"
+import React, { createRef } from "react"
 import Select from "react-select"
 import Layout from "../components/layout"
 import SEO from "../components/seo"
 import Estimation from "../components/estimationResult"
-import { trackPromise } from "react-promise-tracker";
-import LoadingIndicator from '../components/loader'
-
+import { trackPromise } from "react-promise-tracker"
+import LoadingIndicator from "../components/loader"
+import { Map, TileLayer, Marker, Popup } from "react-leaflet"
 export default class IndexPage extends React.Component {
   state = {
     bedrooms: "",
@@ -13,7 +13,14 @@ export default class IndexPage extends React.Component {
     propertyType: "",
     bathrooms: "",
     squareFootage: "",
+    longitude: "",
+    latitude: "",
     estimation: undefined,
+    hasLocation: false,
+    latlng: {
+      lat: 38.530,
+      lng: -96.826,
+    },
   }
 
   getPropertyTypeOptions = () => [
@@ -39,6 +46,8 @@ export default class IndexPage extends React.Component {
 
   testParam1 = () => {
     this.setState({
+      latitude: '',
+      longitude: '',
       address: "5500 Grand Lake Drive, San Antonio, TX",
       bedrooms: "4",
       bathrooms: "2",
@@ -48,6 +57,8 @@ export default class IndexPage extends React.Component {
   }
   testParam2 = () => {
     this.setState({
+      latitude: '',
+      longitude: '',
       address: "5500 Grand Lake Drive, San Antonio, TX",
       bedrooms: "1",
       bathrooms: "1",
@@ -57,6 +68,8 @@ export default class IndexPage extends React.Component {
   }
   testParam3 = () => {
     this.setState({
+      latitude: '',
+      longitude: '',
       address: "5500 Grand Lake Drive, San Antonio, TX",
       bedrooms: "2",
       bathrooms: "1",
@@ -66,45 +79,66 @@ export default class IndexPage extends React.Component {
   }
 
   callEstimationAPI() {
+    console.log(this.state);
+    
+    let options = {
+      bedrooms: this.state.bedrooms,
+      bathrooms: this.state.bathrooms,
+      propertyType: this.state.propertyType.value,
+      squareFootage: this.state.squareFootage,
+    }
+
+    if (this.state.address) {
+      options.address = this.state.address
+    } else if(this.state.longitude && this.state.latitude) {
+      options.longitude = this.state.longitude
+      options.latitude = this.state.latitude
+    }
+    else
+    {
+      alert(
+        `Please provide address or coordinates.`
+      )
+      return;
+    }
+
     const axios = require("axios")
     trackPromise(
-    axios({
-      method: "GET",
-      url: "https://realtymole-rental-estimate-v1.p.rapidapi.com/rentalPrice",
-      headers: {
-        "content-type": "application/octet-stream",
-        "x-rapidapi-host": "realtymole-rental-estimate-v1.p.rapidapi.com",
-        "x-rapidapi-key": "d89a021ae8mshd258915b90d60fbp1953b2jsn966ad69b41a7",
-        useQueryString: true,
-      },
-      params: {
-        address: this.state.address,
-        bedrooms: this.state.bedrooms,
-        bathrooms: this.state.bathrooms,
-        propertyType: this.state.propertyType.value,
-        squareFootage: this.state.squareFootage,
-      },
-    })
-      .then(response => {
-        if(response.data)
-        {
-          if(typeof response.data == "string" &&
-             response.data.includes('Error'))
-             {
-              alert(`An Error Occured. Could be that you didn't provide any search parameters, or we couldn't find your address`)
-             }
-             else
-             {
-               this.setState({ estimation: response.data })
-               setTimeout(() => {
+      axios({
+        method: "GET",
+        url: "https://realtymole-rental-estimate-v1.p.rapidapi.com/rentalPrice",
+        headers: {
+          "content-type": "application/octet-stream",
+          "x-rapidapi-host": "realtymole-rental-estimate-v1.p.rapidapi.com",
+          "x-rapidapi-key":
+            "d89a021ae8mshd258915b90d60fbp1953b2jsn966ad69b41a7",
+          useQueryString: true,
+        },
+        params: options,
+      })
+        .then(response => {
+          if (response.data) {
+            if (typeof response.data == "string") {
+              if (response.data.includes("Error")) {
+                alert(
+                  `An Error Occured. Could be that you didn't provide any search parameters, or we couldn't find your address`
+                )
+              }
+              if (response.data.includes("Could not find sufficient")) {
+                alert(`Sorry, not enough data for estemation on that area`)
+              }
+            } else {
+              this.setState({ estimation: response.data })
+              setTimeout(() => {
                 document.getElementById("estimation").scrollIntoView()
               }, 800)
-             }
-        }
-      })
-      .catch(error => {
-        console.log(error)
-      }))
+            }
+          }
+        })
+        .catch(error => {
+          console.log(error)
+        })
+    )
   }
 
   estimationResult = () => {
@@ -114,113 +148,196 @@ export default class IndexPage extends React.Component {
     return ""
   }
 
+  mapRef = createRef()
+
+  handleMapClick = e => {
+    this.setState({
+      latitude: e.latlng.lat,
+      longitude: e.latlng.lng,
+      address: ''
+    })
+
+    const map = this.mapRef.current
+    if (map != null) {
+      map.leafletElement.locate()
+    }
+  }
+
+  handleLocationFound = e => {
+    this.setState({
+      hasLocation: true,
+      latlng: e.latlng,
+    })
+  }
+
   render() {
+    const marker = this.state.hasLocation ? (
+      <Marker position={this.state.latlng}>
+        <Popup>You are here</Popup>
+      </Marker>
+    ) : null
     return (
+        <LoadingIndicator>
       <Layout>
-        <LoadingIndicator/>
         <SEO title="Home" />
         <div className="container mb-5">
           <h3 className="display-6 text-center">
             Get your rent estimation today!
           </h3>
-          <p className="text-center">
-            Note: You must provide an address in USA. The property address must be in the format of Street Address, City, State.
-            you can try out some of the test cases. Choose one and hit Estimate Rent.
-          </p>
-          <div className="row mb-2">
-            <div className="col-md-4 mb-1">
-              <button
-                onClick={this.testParam1}
-                className="btn btn-success btn-block"
-              >
-                Test 1
-              </button>
-            </div>
-            <div className="col-md-4 mb-1">
-              <button
-                onClick={this.testParam2}
-                className="btn btn-info btn-block"
-              >
-                Test 2
-              </button>
-            </div>
-            <div className="col-md-4 mb-1">
-              <button
-                onClick={this.testParam3}
-                className="btn btn-dark btn-block"
-              >
-                Test 3
-              </button>
-            </div>
-          </div>
-          <div className="form-group">
-            <input
-              type="text"
-              name="address"
-              placeholder="Property Address"
-              className="form-control"
-              value={this.state.address}
-              onChange={this.handleInputChange}
-            />
-          </div>
-
-          <div className="row justify-content-center form-group">
-            <div className="col-md-3">
-              <Select
-                placeholder="Select Type"
-                value={this.state.propertyType}
-                onChange={type =>
-                  this.handleInputChange({
-                    target: { value: type, name: "propertyType" },
-                  })
-                }
-                options={this.getPropertyTypeOptions()}
-              />
-            </div>
-            <div className="col-md-3">
-              <input
-                type="number"
-                name="bedrooms"
-                placeholder="Bedrooms"
-                className="form-control"
-                value={this.state.bedrooms}
-                onChange={this.handleInputChange}
-              />
-            </div>
-            <div className="col-md-3">
-              <input
-                type="number"
-                name="bathrooms"
-                placeholder="Bathrooms"
-                className="form-control"
-                value={this.state.bathrooms}
-                onChange={this.handleInputChange}
-              />
-            </div>
-            <div className="col-md-3">
-              <input
-                type="number"
-                name="squareFootage"
-                placeholder="Square Footage"
-                className="form-control"
-                value={this.state.squareFootage}
-                onChange={this.handleInputChange}
-              />
-            </div>
-          </div>
-
           <div className="row">
-            <button
-              onClick={this.estimateRent}
-              className="btn btn-primary btn-block"
-            >
-              Estimate Rent
-            </button>
+            <div className="col-md-6">
+              <div className="row justify-content-center">
+                <Map
+                  center={this.state.latlng}
+                  id="mapid"
+                  length={4}
+                  onClick={this.handleMapClick}
+                  onLocationfound={this.handleLocationFound}
+                  ref={this.mapRef}
+                  zoom={4}
+                >
+                  <TileLayer
+                    attribution='&amp;copy <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  />
+                  {marker}
+                </Map>
+              </div>
+            </div>
+            <div className="col-md-6">
+              <div className="row mb-2">
+                <div className="col-md-4 mb-1">
+                  <button
+                    onClick={this.testParam1}
+                    className="btn btn-success btn-block"
+                  >
+                    Test 1
+                  </button>
+                </div>
+                <div className="col-md-4 mb-1">
+                  <button
+                    onClick={this.testParam2}
+                    className="btn btn-info btn-block"
+                  >
+                    Test 2
+                  </button>
+                </div>
+                <div className="col-md-4 mb-1">
+                  <button
+                    onClick={this.testParam3}
+                    className="btn btn-dark btn-block"
+                  >
+                    Test 3
+                  </button>
+                </div>
+              </div>
+              <hr></hr>
+              <p className="text-center">
+                Select coordinates from the map or insert manually.
+              </p>
+              <div className="row justify-content-center form-group">
+                <div className="col-md-6">
+                  <input
+                    type="number"
+                    name="longitude"
+                    placeholder="Longitude"
+                    className="form-control"
+                    value={this.state.longitude}
+                    onChange={this.handleInputChange}
+                  />
+                </div>
+                <div className="col-md-6">
+                  <input
+                    type="number"
+                    name="latitude"
+                    placeholder="Latitude"
+                    className="form-control"
+                    value={this.state.latitude}
+                    onChange={this.handleInputChange}
+                  />
+                </div>
+              </div>
+
+              <p className="text-center">
+                Or enter address
+              </p>
+              <div className="form-group">
+                <input
+                  type="text"
+                  name="address"
+                  placeholder="Property Address: Street Address, City, State"
+                  className="form-control"
+                  value={this.state.address}
+                  onChange={this.handleInputChange}
+                />
+              </div>
+
+              <hr></hr>
+              <p className="text-center">
+                Optional parameters
+              </p>
+              <div className="row justify-content-center form-group">
+                <div className="col-md-6">
+                  <Select
+                    placeholder="Select Type"
+                    value={this.state.propertyType}
+                    onChange={type =>
+                      this.handleInputChange({
+                        target: { value: type, name: "propertyType" },
+                      })
+                    }
+                    options={this.getPropertyTypeOptions()}
+                  />
+                </div>
+                <div className="col-md-6">
+                  <input
+                    type="number"
+                    name="squareFootage"
+                    placeholder="Square Footage"
+                    className="form-control"
+                    value={this.state.squareFootage}
+                    onChange={this.handleInputChange}
+                  />
+                </div>
+              </div>
+
+              <div className="row justify-content-center form-group">
+                <div className="col-md-6">
+                  <input
+                    type="number"
+                    name="bedrooms"
+                    placeholder="Bedrooms"
+                    className="form-control"
+                    value={this.state.bedrooms}
+                    onChange={this.handleInputChange}
+                  />
+                </div>
+                <div className="col-md-6">
+                  <input
+                    type="number"
+                    name="bathrooms"
+                    placeholder="Bathrooms"
+                    className="form-control"
+                    value={this.state.bathrooms}
+                    onChange={this.handleInputChange}
+                  />
+                </div>
+              </div>
+
+              <div className="row">
+                <button
+                  onClick={this.estimateRent}
+                  className="btn btn-primary btn-block"
+                >
+                  Estimate Rent
+                </button>
+              </div>
+            </div>
           </div>
         </div>
         <hr></hr>
         <div id="estimation">{this.estimationResult()}</div>
-      </Layout>
+      </Layout></LoadingIndicator>
     )
   }
 }

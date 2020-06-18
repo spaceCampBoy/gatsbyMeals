@@ -6,4 +6,4 @@
 
 // You can delete this file if you're not using it
 import 'bootstrap/dist/css/bootstrap.css';
-import "./src/styles/global.css"
+import "./src/styles/global.css";
