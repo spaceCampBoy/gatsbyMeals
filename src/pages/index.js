@@ -146,7 +146,10 @@ export default class IndexPage extends React.Component {
             } else {
               this.setState({ estimation: response.data })
               setTimeout(() => {
-                document.getElementById("estimation").scrollIntoView()
+                if(document)
+                {
+                  document.getElementById("estimation").scrollIntoView()
+                }
               }, 800)
             }
           }
