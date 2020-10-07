@@ -1,9 +1,9 @@
 {
-  "name": "gatsby-starter-default",
+  "name": "rent-estimator",
   "private": true,
-  "description": "A simple starter to get up and developing quickly with Gatsby",
+  "description": "An App to estimate rent in USA",
   "version": "0.1.0",
-  "author": "Kyle Mathews <mathews.kyle@gmail.com>",
+  "author": "Faizan Yousf <faizan.yousaf1311@gmail.com>",
   "dependencies": {
     "axios": "^0.19.2",
     "bootstrap": "^4.5.0",
